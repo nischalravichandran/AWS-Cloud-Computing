@@ -1,0 +1,97 @@
+// exports.handler = async (event) => {
+//     return sendRes(200,'Hello');
+// };
+
+// const sendRes = (status, body) => {
+//   var response = {
+//     statusCode: status,
+//     headers: {
+//       "Content-Type": "text/html"
+//     },
+//     body: body
+//   };
+//   return response;
+// };
+
+
+
+ 
+//Initiallising node modules
+var express = require('express');
+var bodyParser = require('body-parser');
+var sql = require('mssql');
+var app = express();
+
+
+app.use(bodyParser.json());
+
+
+//setup database connection
+
+var dbconfig = {
+    user: 'Param',
+    password: 'Cloudcomputing2019',
+    server: 'introclouddb.database.windows.net',
+    database: 'Introcloud',
+	options: {  
+   encrypt:  true
+			}	
+				};
+ 
+// Change execute query to accept parameters.
+
+exports.handler = function(event, context, callback) {
+	
+	var req = JSON.parse(event.body);
+var parameters = [
+      { name: 'person_id', sqltype: sql.INT, value: req.person_id},
+      { name: 'last_name', sqltype: sql.VarChar,  value: req.last_name},
+	  { name: 'first_name', sqltype: sql.VarChar,  value: req.first_name},
+	  { name: 'salary', sqltype: sql.VarChar,  value: req.salary},
+	  { name: 'phone', sqltype: sql.VarChar,  value: req.phone}
+    ];
+console.log(parameters);
+var query = "INSERT INTO INDIVIDUAL_ACCOUNT (person_id, last_name, first_name, phone) VALUES (@person_id, @last_name,@first_name,@phone)";
+	
+    sql.connect(dbconfig,function(err){
+        if(err){
+            console.log("there is a database connection error -> "+err);
+            res.send(err);
+			sql.close();
+        }
+        else{
+            // create request object
+            var request = new sql.Request();
+
+            // Add parameters
+            parameters.forEach(function(p) {
+                request.input(p.name, p.sqltype, p.value);
+            });
+
+            // query to the database
+            request.query(query,function(err,result){
+                if(err){
+					console.log(err);
+    callback(err);
+	sql.close();
+                }
+                else{
+					    var responseBody = result;
+				
+    var response = {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": JSON.stringify(responseBody),
+        "isBase64Encoded": false
+    };
+    callback(null, response);
+                    res.send(result);
+                    sql.close();
+                }
+            });
+        }
+    });
+	};
+
