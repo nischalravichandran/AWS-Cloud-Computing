@@ -29,8 +29,8 @@ app.use(bodyParser.json());
 //setup database connection
 
 var dbconfig = {
-    user: 'Param',
-    password: 'Cloudcomputing2019',
+    user: 'DB_User',
+    password: '******',
     server: 'introclouddb.database.windows.net',
     database: 'Introcloud',
 	options: {  
